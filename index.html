@@ -381,6 +381,11 @@ body.printing-chronicle #p7{display:block!important;}
   </div>
 
   <div class="ornament">✦ ✿ ✦</div>
+
+  <div style="text-align:center;margin-top:28px;padding-top:20px;border-top:1px solid var(--rule);">
+    <p style="font-size:0.68rem;color:var(--muted);font-style:italic;margin-bottom:10px;">Ready for a fresh week? This will clear all your entries.</p>
+    <button onclick="newWeek()" style="padding:9px 24px;border:1.5px solid var(--rule);background:var(--warm);color:var(--muted);font-family:'Jost',sans-serif;font-size:0.74rem;font-weight:500;cursor:pointer;border-radius:20px;transition:all .18s;" onmouseover="this.style.borderColor='var(--rose)';this.style.color='var(--ink)'" onmouseout="this.style.borderColor='var(--rule)';this.style.color='var(--muted)'">↺ Start New Week</button>
+  </div>
 </div>
 
 <script>
@@ -596,27 +601,39 @@ function addChronSidebar() {
   if (!chronEdit) toggleChron();
 }
 
+function newWeek() {
+  if (!confirm('Start a new week? This will clear all your entries.')) return;
+  localStorage.removeItem('weeklyAudit');
+  location.reload();
+}
+
 // ── INIT ──
 function savePDF() {
+  window.print();
+}
+
+window.onbeforeprint = function() {
   // Show all pages
   for (let i = 0; i <= 7; i++) {
     const p = document.getElementById('p' + i);
     if (p) {
-      p.style.cssText = 'display:block!important;' + (i > 0 ? 'page-break-before:always!important;' : '');
+      p.style.display = 'block';
+      if (i > 0) p.style.pageBreakBefore = 'always';
     }
   }
-  // Small delay to let styles apply before print dialog opens
-  setTimeout(() => {
-    window.print();
-    // Restore after print
-    for (let i = 0; i <= 7; i++) {
-      const p = document.getElementById('p' + i);
-      if (p) {
-        p.style.cssText = p.classList.contains('active') ? 'display:block;' : 'display:none;';
-      }
+  // Header only shows above p0 naturally — no change needed
+};
+
+window.onafterprint = function() {
+  // Restore — hide all pages except current active one
+  for (let i = 0; i <= 7; i++) {
+    const p = document.getElementById('p' + i);
+    if (p) {
+      p.style.display = p.classList.contains('active') ? 'block' : 'none';
+      p.style.pageBreakBefore = '';
     }
-  }, 300);
-}
+  }
+};
 
 buildCatList();
 drawRadar();
