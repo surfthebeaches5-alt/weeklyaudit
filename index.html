@@ -598,31 +598,25 @@ function addChronSidebar() {
 
 // ── INIT ──
 function savePDF() {
-  window.print();
-}
-
-window.onbeforeprint = function() {
   // Show all pages
   for (let i = 0; i <= 7; i++) {
     const p = document.getElementById('p' + i);
     if (p) {
-      p.style.display = 'block';
-      if (i > 0) p.style.pageBreakBefore = 'always';
+      p.style.cssText = 'display:block!important;' + (i > 0 ? 'page-break-before:always!important;' : '');
     }
   }
-  // Header only shows above p0 naturally — no change needed
-};
-
-window.onafterprint = function() {
-  // Restore — hide all pages except current active one
-  for (let i = 0; i <= 7; i++) {
-    const p = document.getElementById('p' + i);
-    if (p) {
-      p.style.display = p.classList.contains('active') ? 'block' : 'none';
-      p.style.pageBreakBefore = '';
+  // Small delay to let styles apply before print dialog opens
+  setTimeout(() => {
+    window.print();
+    // Restore after print
+    for (let i = 0; i <= 7; i++) {
+      const p = document.getElementById('p' + i);
+      if (p) {
+        p.style.cssText = p.classList.contains('active') ? 'display:block;' : 'display:none;';
+      }
     }
-  }
-};
+  }, 300);
+}
 
 buildCatList();
 drawRadar();
