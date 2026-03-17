@@ -607,6 +607,53 @@ function newWeek() {
   location.reload();
 }
 
+function newWeek() {
+  if (!confirm('Start a new week? This will clear all your entries.')) return;
+  localStorage.removeItem('weeklyAudit');
+  location.reload();
+}
+
+// ── SAVE / RESTORE ──
+function saveData() {
+  const data = {};
+  document.querySelectorAll('[contenteditable]').forEach((el, i) => {
+    data['ce_' + i] = el.innerHTML;
+  });
+  const weekField = document.querySelector('.week-field');
+  if (weekField) data['week_field'] = weekField.value;
+  data['scores'] = JSON.stringify(scores);
+  data['focusAreas'] = JSON.stringify(focusAreas);
+  const activeTab = document.querySelector('.page.active');
+  if (activeTab) data['activeTab'] = activeTab.id;
+  localStorage.setItem('weeklyAudit', JSON.stringify(data));
+}
+
+function restoreData() {
+  const raw = localStorage.getItem('weeklyAudit');
+  if (!raw) return;
+  const data = JSON.parse(raw);
+  const weekField = document.querySelector('.week-field');
+  if (weekField && data['week_field']) weekField.value = data['week_field'];
+  if (data['scores']) {
+    const saved = JSON.parse(data['scores']);
+    saved.forEach((s, i) => { scores[i] = s; });
+  }
+  if (data['focusAreas']) {
+    const saved = JSON.parse(data['focusAreas']);
+    saved.forEach(fi => { if (!focusAreas.includes(fi)) focusAreas.push(fi); });
+  }
+  if (data['activeTab']) {
+    const tabIndex = parseInt(data['activeTab'].replace('p',''));
+    const tabBtn = document.querySelectorAll('.tab-btn')[tabIndex];
+    if (tabBtn) goTab(tabIndex, tabBtn);
+  }
+  setTimeout(() => {
+    document.querySelectorAll('[contenteditable]').forEach((el, i) => {
+      if (data['ce_' + i] !== undefined) el.innerHTML = data['ce_' + i];
+    });
+  }, 100);
+}
+
 // ── INIT ──
 function savePDF() {
   window.print();
@@ -637,6 +684,9 @@ window.onafterprint = function() {
 
 buildCatList();
 drawRadar();
+restoreData();
+document.getElementById('paper').addEventListener('input', saveData);
+document.querySelector('.week-field').addEventListener('input', saveData);
 </script>
 </body>
 </html>
