@@ -649,6 +649,7 @@ function restoreData() {
   }
   // Rebuild wheel UI then restore text fields
   buildCatList();
+  scores.forEach((s, i) => { if (s > 0) updateRow(i); });
   drawRadar();
   renderFocusPanel();
   setTimeout(() => {
